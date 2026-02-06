@@ -3,7 +3,7 @@
 Plugin Name: Manajemen Pondok Pesantren Pro
 Description: Sistem terpadu manajemen santri, keuangan SPP, dan portal cek santri.
 Version: 1.0
-Author: Kolaborasi Gemini & Anda
+Author: Alifbata Digital
 */
 
 if (!defined('ABSPATH')) exit;
