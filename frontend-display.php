@@ -1,52 +1,54 @@
 <?php
-// Mencegah akses langsung
-if (!defined('ABSPATH')) exit;
-
-// Membuat shortcode [cek_santri]
 add_shortcode('cek_santri', function() {
-    // Ambil warna utama dari pengaturan (default biru jika belum diatur)
-    $warna_tema = get_option('pes_warna', '#0073aa');
-    $nama_pondok = get_option('nama_pesantren', 'Pesantren Kami');
+    $warna = get_option('pes_warna', '#0073aa');
+    $nama_pondok = get_option('pes_nama', 'Pesantren Kami');
+    $search_query = isset($_GET['nis_search']) ? sanitize_text_field($_GET['nis_search']) : '';
 
-    // Ambil data semua santri
-    $query = new WP_Query(array(
-        'post_type'      => 'santri',
-        'posts_per_page' => -1, // Tampilkan semua
-        'orderby'        => 'title',
-        'order'          => 'ASC'
-    ));
+    $html = '<div class="pesantren-container">';
+    $html .= '<h2 style="color:'.$warna.'">Portal Informasi Santri '.$nama_pondok.'</h2>';
 
-    // Mulai membangun tampilan HTML
-    $html = '<div class="wrapper-santri" style="font-family: Arial, sans-serif;">';
-    $html .= '<h2 style="color:' . $warna_tema . '; border-bottom: 2px solid ' . $warna_tema . '; padding-bottom: 10px;">Daftar Santri ' . esc_html($nama_pondok) . '</h2>';
-    
-    if ($query->have_posts()) {
-        $html .= '<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">';
-        $html .= '<tr style="background-color:' . $warna_tema . '; color: white;">';
-        $html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Nama Santri</th>';
-        $html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">NIS</th>';
-        $html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Alamat</th>';
-        $html .= '</tr>';
+    // Form Pencarian
+    $html .= '<div class="search-box">
+        <form method="GET">
+            <input type="text" name="nis_search" placeholder="Masukkan NIS..." value="'.$search_query.'">
+            <button type="submit">Cari Santri</button>
+            <a href="'.strtok($_SERVER["REQUEST_URI"], '?').'" style="font-size:12px; margin-left:10px;">Reset</a>
+        </form>
+    </div>';
 
-        while ($query->have_posts()) {
-            $query->the_post();
-            $id_santri = get_the_ID();
-            $nis = get_post_meta($id_santri, '_santri_nis', true);
-            $alamat = get_post_meta($id_santri, '_santri_alamat', true);
-
-            $html .= '<tr>';
-            $html .= '<td style="padding: 10px; border: 1px solid #ddd;">' . get_the_title() . '</td>';
-            $html .= '<td style="padding: 10px; border: 1px solid #ddd;">' . esc_html($nis) . '</td>';
-            $html .= '<td style="padding: 10px; border: 1px solid #ddd;">' . esc_html($alamat) . '</td>';
-            $html .= '</tr>';
-        }
-        $html .= '</table>';
-        wp_reset_postdata();
-    } else {
-        $html .= '<p style="padding: 20px; background: #f9f9f9;">Belum ada data santri yang terdaftar.</p>';
+    // Query Data
+    $args = array('post_type' => 'santri', 'posts_per_page' => -1);
+    if (!empty($search_query)) {
+        $args['meta_query'] = array(array('key' => '_santri_nis', 'value' => $search_query, 'compare' => '='));
     }
 
-    $html .= '</div>';
+    $query = new WP_Query($args);
+    
+    $html .= '<table class="pesantren-table">
+        <thead><tr style="background:'.$warna.'; color:#fff;">
+            <th>Nama Santri</th><th>NIS</th><th>Alamat</th><th>Status SPP</th>
+        </tr></thead><tbody>';
 
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $nis = get_post_meta(get_the_ID(), '_santri_nis', true);
+            $alamat = get_post_meta(get_the_ID(), '_santri_alamat', true);
+            $spp = get_post_meta(get_the_ID(), '_santri_spp', true);
+            $class = ($spp == 'Lunas') ? 'status-lunas' : 'status-belum';
+
+            $html .= '<tr>
+                <td>'.get_the_title().'</td>
+                <td>'.$nis.'</td>
+                <td>'.$alamat.'</td>
+                <td><span class="'.$class.'">'.$spp.'</span></td>
+            </tr>';
+        }
+        wp_reset_postdata();
+    } else {
+        $html .= '<tr><td colspan="4">Data tidak ditemukan.</td></tr>';
+    }
+
+    $html .= '</tbody></table></div>';
     return $html;
 });
