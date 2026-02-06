@@ -1,31 +1,17 @@
 <?php
-// Menambahkan Sub-Menu Pengaturan di bawah Menu Santri
 add_action('admin_menu', function() {
-    add_submenu_page(
-        'edit.php?post_type=santri', // Induknya adalah menu Santri
-        'Pengaturan Pesantren',
-        'Pengaturan',
-        'manage_options',
-        'pesantren-settings',
-        'pesantren_render_settings'
-    );
+    add_submenu_page('edit.php?post_type=santri', 'Setelan', 'Setelan', 'manage_options', 'pes_settings', 'pes_render_settings');
 });
 
-// Tampilan Halaman Pengaturan
-function pesantren_render_settings() {
+function pes_render_settings() {
     ?>
     <div class="wrap">
-        <h1>Pengaturan Tampilan Pesantren</h1>
+        <h1>Setelan Pesantren</h1>
         <form method="post" action="options.php">
-            <?php
-            settings_fields('pesantren_options_group');
-            do_settings_sections('pesantren_options_group');
-            ?>
+            <?php settings_fields('pes_opt'); do_settings_sections('pes_opt'); ?>
             <table class="form-table">
-                <tr>
-                    <th>Nama Pondok Pesantren</th>
-                    <td><input type="text" name="nama_pesantren" value="<?php echo esc_attr(get_option('nama_pesantren')); ?>" class="regular-text"></td>
-                </tr>
+                <tr><th>Nama Pondok</th><td><input type="text" name="pes_nama" value="<?php echo esc_attr(get_option('pes_nama')); ?>" class="regular-text"></td></tr>
+                <tr><th>Warna Tema</th><td><input type="color" name="pes_warna" value="<?php echo esc_attr(get_option('pes_warna', '#0073aa')); ?>"></td></tr>
             </table>
             <?php submit_button(); ?>
         </form>
@@ -33,7 +19,7 @@ function pesantren_render_settings() {
     <?php
 }
 
-// Mendaftarkan opsi ke database WordPress
 add_action('admin_init', function() {
-    register_setting('pesantren_options_group', 'nama_pesantren');
+    register_setting('pes_opt', 'pes_nama');
+    register_setting('pes_opt', 'pes_warna');
 });
