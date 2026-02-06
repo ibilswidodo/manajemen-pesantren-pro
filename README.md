@@ -1,2 +1,2 @@
 # manajemen-pesantren-pro
-Plugin WordPress untuk Manajemen Pondok Pesantren
+Plugin WordPress untuk Manajemen Pondok Pesantren Alifbata Digital
