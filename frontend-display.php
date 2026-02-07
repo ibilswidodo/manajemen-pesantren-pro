@@ -1,52 +1,41 @@
 <?php
 add_shortcode('cek_santri', function() {
     $warna = get_option('pes_warna', '#0073aa');
-    $nama_pondok = get_option('pes_nama', 'Pesantren Kami');
-    $search_query = isset($_GET['nis_search']) ? sanitize_text_field($_GET['nis_search']) : '';
-
+    $search = isset($_GET['nis']) ? sanitize_text_field($_GET['nis']) : '';
+    
     $html = '<div class="pesantren-container">';
-    $html .= '<h2 style="color:'.$warna.'">Portal Informasi Santri '.$nama_pondok.'</h2>';
+    $html .= '<form method="GET" style="margin-bottom:20px;">
+                <input type="text" name="nis" placeholder="Cek berdasarkan NIS..." value="'.$search.'" style="padding:10px; width:250px; border:1px solid #ddd; border-radius:5px;">
+                <button type="submit" style="padding:10px 20px; background:'.$warna.'; color:#fff; border:none; border-radius:5px; cursor:pointer;">Cari Data</button>
+              </form>';
 
-    // Form Pencarian
-    $html .= '<div class="search-box">
-        <form method="GET">
-            <input type="text" name="nis_search" placeholder="Masukkan NIS..." value="'.$search_query.'">
-            <button type="submit">Cari Santri</button>
-            <a href="'.strtok($_SERVER["REQUEST_URI"], '?').'" style="font-size:12px; margin-left:10px;">Reset</a>
-        </form>
-    </div>';
-
-    // Query Data
     $args = array('post_type' => 'santri', 'posts_per_page' => -1);
-    if (!empty($search_query)) {
-        $args['meta_query'] = array(array('key' => '_santri_nis', 'value' => $search_query, 'compare' => '='));
+    if($search) {
+        $args['meta_query'] = array(array('key' => '_nis', 'value' => $search, 'compare' => '='));
     }
 
     $query = new WP_Query($args);
-    
-    $html .= '<table class="pesantren-table">
-        <thead><tr style="background:'.$warna.'; color:#fff;">
-            <th>Nama Santri</th><th>NIS</th><th>Alamat</th><th>Status SPP</th>
-        </tr></thead><tbody>';
+    $html .= '<table class="pes-table"><thead><tr><th>Nama</th><th>NIS</th><th>JK</th><th>Alamat</th><th>SPP</th></tr></thead><tbody>';
 
-    if ($query->have_posts()) {
-        while ($query->have_posts()) {
+    if($query->have_posts()) {
+        while($query->have_posts()) {
             $query->the_post();
-            $nis = get_post_meta(get_the_ID(), '_santri_nis', true);
-            $alamat = get_post_meta(get_the_ID(), '_santri_alamat', true);
-            $spp = get_post_meta(get_the_ID(), '_santri_spp', true);
-            $class = ($spp == 'Lunas') ? 'status-lunas' : 'status-belum';
+            $nis = get_post_meta(get_the_ID(), '_nis', true);
+            $jk = get_post_meta(get_the_ID(), '_jk', true);
+            $spp = get_post_meta(get_the_ID(), '_spp', true);
+            $pill = ($spp == 'Lunas') ? 'lunas' : 'belum';
 
             $html .= '<tr>
-                <td>'.get_the_title().'</td>
+                <td><strong>'.get_the_title().'</strong></td>
                 <td>'.$nis.'</td>
-                <td>'.$alamat.'</td>
-                <td><span class="'.$class.'">'.$spp.'</span></td>
+                <td>'.$jk.'</td>
+                <td>'.get_post_meta(get_the_ID(), '_alamat', true).'</td>
+                <td><span class="status-pill '.$pill.'">'.$spp.'</span></td>
             </tr>';
         }
         wp_reset_postdata();
     } else {
-        $html .= '<tr><td colspan="4">Data tidak ditemukan.</td></tr>';
+        $html .= '<tr><td colspan="5">Data tidak ditemukan atau belum diinput.</td></tr>';
     }
 
     $html .= '</tbody></table></div>';
