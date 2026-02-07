@@ -1,35 +1,63 @@
 <?php
 add_action('admin_menu', function() {
-    add_menu_page('Pesantren', 'Pesantren', 'manage_options', 'pes_dashboard', 'pes_render_dashboard', 'dashicons-mosque', 6);
-    add_submenu_page('pes_dashboard', 'Dashboard', 'Dashboard Statistik', 'manage_options', 'pes_dashboard', 'pes_render_dashboard');
-    add_submenu_page('pes_dashboard', 'Pengaturan', 'Pengaturan', 'manage_options', 'pes_settings', 'pes_render_settings');
+    // Menu Utama
+    add_menu_page('PesantrenHub', 'PesantrenHub', 'manage_options', 'pes_dashboard', 'phub_dashboard', 'dashicons-mosque', 2);
+    
+    // Sub Menu
+    add_submenu_page('pes_dashboard', 'Dashboard', 'Dashboard', 'manage_options', 'pes_dashboard', 'phub_dashboard');
+    add_submenu_page('pes_dashboard', 'Pendaftaran', 'Form Pendaftaran', 'manage_options', 'phub_reg_builder', 'phub_reg_builder_page');
+    add_submenu_page('pes_dashboard', 'Pengaturan', 'Pengaturan Web', 'manage_options', 'phub_settings', 'phub_settings_page');
 });
 
-function pes_render_dashboard() {
+function phub_dashboard() {
     $total = wp_count_posts('santri')->publish;
-    $lunas = new WP_Query(array('post_type'=>'santri','meta_key'=>'_spp','meta_value'=>'Lunas'));
-    $belum = new WP_Query(array('post_type'=>'santri','meta_key'=>'_spp','meta_value'=>'Belum'));
     ?>
     <div class="wrap">
-        <h1>Dashboard Pesantren</h1>
-        <div class="pes-dashboard">
-            <div class="pes-card"><h3>Total Santri</h3><span class="num"><?php echo $total; ?></span></div>
-            <div class="pes-card" style="border-top-color: #27ae60;"><h3>Sudah Lunas</h3><span class="num"><?php echo $lunas->found_posts; ?></span></div>
-            <div class="pes-card" style="border-top-color: #e74c3c;"><h3>Belum Lunas</h3><span class="num"><?php echo $belum->found_posts; ?></span></div>
+        <h1>Dashboard PesantrenHub</h1>
+        <div class="phub-dash">
+            <div class="phub-card"><h3>Total Santri</h3><span class="val"><?php echo $total; ?></span></div>
+            <div class="phub-card" style="border-color:#3498db"><h3>Santri Baru (Pending)</h3><span class="val">0</span></div>
         </div>
     </div>
     <?php
 }
 
-function pes_render_settings() {
+function phub_reg_builder_page() {
     ?>
     <div class="wrap">
-        <h1>Setelan Umum</h1>
+        <h1>Form Builder Pendaftaran</h1>
         <form method="post" action="options.php">
-            <?php settings_fields('pes_opt'); do_settings_sections('pes_opt'); ?>
+            <?php settings_fields('phub_reg_opt'); do_settings_sections('phub_reg_opt'); ?>
+            <p>Pilih kolom yang ingin diaktifkan di form pendaftaran online:</p>
             <table class="form-table">
-                <tr><th>Nama Pesantren</th><td><input type="text" name="pes_nama" value="<?php echo get_option('pes_nama'); ?>" class="regular-text"></td></tr>
-                <tr><th>Warna Branding</th><td><input type="color" name="pes_warna" value="<?php echo get_option('pes_warna', '#0073aa'); ?>"></td></tr>
+                <?php 
+                $fields = array(
+                    'reg_show_nis'   => 'Nomor Induk (NIS)',
+                    'reg_show_wali'  => 'Nama Wali',
+                    'reg_show_kelas' => 'Pilihan Kelas',
+                    'reg_show_file'  => 'Upload Kartu Keluarga (PDF/JPG)',
+                );
+                foreach($fields as $key => $label) : ?>
+                <tr>
+                    <th><?php echo $label; ?></th>
+                    <td><input type="checkbox" name="<?php echo $key; ?>" value="1" <?php checked(1, get_option($key), true); ?>> Aktifkan</td>
+                </tr>
+                <?php endforeach; ?>
+            </table>
+            <?php submit_button('Simpan Konfigurasi Form'); ?>
+        </form>
+    </div>
+    <?php
+}
+
+function phub_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1>Pengaturan Umum</h1>
+        <form method="post" action="options.php">
+            <?php settings_fields('phub_gen_opt'); do_settings_sections('phub_gen_opt'); ?>
+            <table class="form-table">
+                <tr><th>Nama Pondok</th><td><input type="text" name="phub_nama" value="<?php echo get_option('phub_nama'); ?>" class="regular-text"></td></tr>
             </table>
             <?php submit_button(); ?>
         </form>
@@ -38,6 +66,9 @@ function pes_render_settings() {
 }
 
 add_action('admin_init', function() {
-    register_setting('pes_opt', 'pes_nama');
-    register_setting('pes_opt', 'pes_warna');
+    register_setting('phub_reg_opt', 'reg_show_nis');
+    register_setting('phub_reg_opt', 'reg_show_wali');
+    register_setting('phub_reg_opt', 'reg_show_kelas');
+    register_setting('phub_reg_opt', 'reg_show_file');
+    register_setting('phub_gen_opt', 'phub_nama');
 });
