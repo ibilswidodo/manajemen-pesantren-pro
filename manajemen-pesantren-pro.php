@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Manajemen Pondok Pesantren Pro
-Description: Sistem terpadu manajemen santri, keuangan SPP, dan portal cek santri.
+Plugin Name: Manajemen Pondok Pesantren Pro (Full Version)
+Description: Sistem Manajemen Terpadu: Statistik, Data Santri, & Keuangan.
 Version: 1.0
 Author: Alifbata Digital
 */
@@ -14,16 +14,21 @@ require_once PESANTREN_PATH . 'post-types.php';
 require_once PESANTREN_PATH . 'admin-settings.php';
 require_once PESANTREN_PATH . 'frontend-display.php';
 
-// Tambahkan CSS khusus untuk tampilan tabel agar lebih cantik
-add_action('wp_head', function() {
+// CSS Dashboard Admin & Frontend
+add_action('admin_head', 'pesantren_styles');
+add_action('wp_head', 'pesantren_styles');
+
+function pesantren_styles() {
     echo '<style>
-        .pesantren-container { margin: 20px 0; font-family: sans-serif; }
-        .pesantren-table { width: 100%; border-collapse: collapse; }
-        .pesantren-table th, .pesantren-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        .status-lunas { color: white; background: #27ae60; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
-        .status-belum { color: white; background: #e74c3c; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
-        .search-box { margin-bottom: 20px; padding: 15px; background: #f4f4f4; border-radius: 8px; }
-        .search-box input { padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px; }
-        .search-box button { padding: 8px 15px; background: #0073aa; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .pes-dashboard { display: flex; gap: 20px; margin-top: 20px; }
+        .pes-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; text-align: center; border-top: 4px solid #0073aa; }
+        .pes-card h3 { margin: 0; font-size: 14px; color: #666; }
+        .pes-card .num { font-size: 28px; font-weight: bold; color: #222; margin-top: 10px; display: block; }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #fff; }
+        .lunas { background: #27ae60; }
+        .belum { background: #e74c3c; }
+        .pes-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+        .pes-table th { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #eee; text-align: left; }
+        .pes-table td { padding: 15px; border-bottom: 1px solid #eee; }
     </style>';
-});
+}
